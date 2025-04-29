@@ -13,8 +13,8 @@ class Cinema extends Model
 
     protected $fillable = [
         'name',
-        'location',
-        'total_seats',
+        'phone',
+        'address',
     ];
 
     public function showtimes()

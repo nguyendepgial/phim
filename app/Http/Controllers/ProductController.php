@@ -26,15 +26,13 @@ class ProductController extends Controller
      */
     public function getCombos()
     {
-        $combos = Product::where('status', 'active')
-            ->where('category', 'combo') // Giả sử có cột `category` để phân loại combo
-            ->get();
-
+        $combos = Product::where('status', 'available')->get();
         return response()->json([
             'status' => 'success',
             'combos' => $combos
         ], 200);
     }
+    
 
     /**
      * 🔍 Lấy chi tiết một sản phẩm theo ID

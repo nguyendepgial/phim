@@ -13,9 +13,10 @@ class Seat extends Model
 
     protected $fillable = [
         'cinema_id',
-        'seat_number',
-        'type',
-        'status',
+        'row_number', 
+        'column_number', 
+        'seat_number', 
+        'seat_type'
     ];
 
     public function cinema()

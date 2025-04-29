@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\{Booking, BookingDetail, ShowtimeSeat, Seat, BookingExtra};
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+
 
 class BookingController extends Controller
 {
@@ -14,6 +17,8 @@ class BookingController extends Controller
      */
     public function bookTicket(Request $request)
     {
+        Log::info('✅ Payload nhận từ frontend:', $request->all());
+
         try {
             if (!$user = JWTAuth::parseToken()->authenticate()) {
                 return response()->json(['error' => 'Không xác thực được người dùng'], 401);
@@ -65,7 +70,7 @@ class BookingController extends Controller
 
             foreach ($request->seats as $seat) {
                 BookingDetail::create([
-                    'booking_id' => $booking->id,
+                    'booking_id' => $booking->id,   
                     'seat_id' => $seat['seat_id'],
                     'price' => $seat['price']
                 ]);
@@ -89,7 +94,13 @@ class BookingController extends Controller
             DB::commit();
 
             return response()->json(['message' => 'Đặt vé thành công!', 'booking' => $booking], 201);
-        } catch (\Exception $e) {
+        } 
+        catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'messages' => $e->errors()
+            ], 400);
+        }catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => 'Lỗi khi đặt vé', 'message' => $e->getMessage()], 500);
         }

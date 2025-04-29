@@ -14,9 +14,9 @@ class Showtime extends Model
     protected $fillable = [
         'movie_id',
         'cinema_id',
-        'start_time',
-        'end_time',
-        'price',
+        'show_date',
+        'show_time',
+        'ticket_price',
     ];
 
     public function movie()

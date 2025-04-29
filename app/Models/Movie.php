@@ -13,10 +13,13 @@ class Movie extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'description',
         'duration',
         'release_date',
-        'poster_url',
+        'poster',
+        'trailer',
+        'rating',
         'status',
     ];
 

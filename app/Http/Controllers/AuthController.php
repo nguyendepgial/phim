@@ -32,36 +32,23 @@ class AuthController extends Controller
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if (!$user) {
-                // Nếu user chưa tồn tại thì tạo mới
                 $user = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),
-                    'password' => bcrypt(uniqid()), // Mật khẩu ngẫu nhiên
+                    'password' => bcrypt(uniqid()),
                 ]);
             }
 
-            // Tạo token JWT
             $token = JWTAuth::fromUser($user);
-
-            // Redirect về frontend kèm token
             $frontendUrl = config('app.frontend_url') ?? 'http://localhost:3000';
             return redirect("$frontendUrl/auth/callback?token=$token&user_id={$user->id}");
-
-
-            return response()->json([
-                'user' => $user,
-                'access_token' => $token,
-            ], 200);
         } catch (\Exception $e) {
             $frontendUrl = config('app.frontend_url') ?? 'http://localhost:3000';
             return redirect("$frontendUrl/login?error=google_auth_failed");
-            return response()->json(['error' => 'Google authentication failed', 'message' => $e->getMessage()], 500);
         }
     }
-
-    
 
     /**
      * Đăng xuất, vô hiệu hóa token hiện tại
@@ -84,9 +71,7 @@ class AuthController extends Controller
     public function me()
     {
         try {
-            if (!$user = JWTAuth::parseToken()->authenticate()) {
-                return response()->json(['error' => 'Không tìm thấy người dùng'], 404);
-            }
+            $user = JWTAuth::parseToken()->authenticate();
             return response()->json(['user' => $user], 200);
         } catch (TokenExpiredException $e) {
             return response()->json(['error' => 'Token đã hết hạn'], 401);
@@ -96,4 +81,35 @@ class AuthController extends Controller
             return response()->json(['error' => 'Không có token'], 401);
         }
     }
+
+    /**
+     * Cập nhật họ tên và số điện thoại
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = auth()->user(); // Lấy user từ token
+    
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'phone' => 'nullable|string|max:20',
+            ]);
+    
+            $user->name = $request->name;
+            $user->phone = $request->phone;
+            $user->save();
+    
+            return response()->json([
+                'message' => 'Cập nhật thành công',
+                'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Lỗi khi cập nhật thông tin',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+
 }
